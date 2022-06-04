@@ -36,9 +36,6 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
         },
-        internals: {
-          sidebarPath: require.resolve('./sidebars.js'),
-        },
         blog: {
           showReadingTime: true
         },
