@@ -42,7 +42,7 @@ In the JS we then apply the diff in the browser via [morphdom](https://github.co
 
 Communication in Medusa is bidirectional, meaning changes can happen not only due to actions from the browser, but also from the server.
 
-Key to this is access to the [session](/docs/internals/components.md#session) a user has. Each session can get tags assigned to it.
+Key to this is access to the [session](/docs/internals/components.md#-session) a user has. Each session can get tags assigned to it.
 
 Developers can also add tags to sessions programmatically. 
 
