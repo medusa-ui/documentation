@@ -25,8 +25,13 @@ From that point on, any interaction with the page is done through the RSocket ch
 As an action happens, we want to trigger a controller method server-side. Each action triggered through a Medusa tag, 
 will be triggering a Javascript function which builds up an event and sends it through the RSocket channel.
 
-The socket is set up with [SocketHandler](/docs/internals/components.md#socket-handler). The socket is expected to be opened on 'event-emitter/{hash}/{sessionId}'. 
-The hash is the key for the route, so it allows a quick lookup of what route is accessed. The sessionId is a time-sensitive generated ID that corresponds with a [session](/docs/internals/components.md#session) object.
+The socket is set up with [SocketHandler](/docs/internals/components.md#socket-handler). 
+
+Initial connection is handled via '/socket' as defined by the default spring.rsocket.server.mapping-path.
+
+The socket's channel is then opened on 'event-emitter/{hash}/{sessionId}'. 
+
+The hash is the key for the route, so it allows a quick lookup of what route is accessed. The sessionId is a generated ID that corresponds with a [session](/docs/internals/components.md#session) object.
 
 The SocketHandler works as a controller, connecting the flow of the action. Once the route and session are retrieved, we pass along the action to the [Action Handler](/docs/internals/components.md#action-handler) component.
 
