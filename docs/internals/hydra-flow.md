@@ -21,6 +21,24 @@ The channel's basic connection / disconnect works as a way to know which service
 
 As the channel is active, the two-way connection can be used to pass along fragment data.
 
+### Heartbeat channel
+
+Hydra is not the initiator of registry. It simply listens for incoming requests.
+
+An app with Medusa will have a pointer to a Hydra instance. (TCP or WS?) It will initiate an RSocket channel with Hydra. It provides its application name, its available paths and its available resources.
+
+Any Medusa app only connects to 1 Hydra instance. Hydra shares its information with other Hydra instances via Redis, or keeps it in-memory in case of a single instance. 
+Which Hydra instance it connects to should not matter, to allow for load balancing access.
+
+Hydra accepts the channel and uses this incoming information of Medusa's routes/resources. A few things happen:
+- It stores the routes/resources in shared memory (thus sharing it with its cluster, if applicable) and changes its overallRouteHashKey in shared memory.
+- It creates a FluxSink and stores it in local memory, then returns this. It can use this FluxSink to send back responses to that specific Medusa instance on demand.
+
+Every second, Hydra checks this routeHashKey to see if it has changed. If it has, it will reload all routes/resources from memory and provision Spring Cloud Gateway routes to them. 
+Since this data is shared, any Hydra instance in the cluster will pick these up within 1 second, even if they have no direct channel connection.
+
+Upon connection termination, Hydra will remove its routes corresponding with the Medusa service and the local memory FluxSink. On the Medusa side, a connection termination will trigger an infinite connection retry every second.
+
 ## Fragments
 Fragments are the core of combined page micro-frontends. The idea is to have a system that can reliably combine parts of pages from different microservices (aka fragments) into a core page.
 
@@ -55,3 +73,18 @@ If such coordination is required, it should be explicitly pointed out.
 - An export means that an Attribute with matching keyName will be made available to the core page. In case of a conflict, an exception will be thrown at compile-time. Developers can specify an alias via 'as my-alias' to specify a non-conflicting name.
 - An import means that an Attribute available to the core page will be made available to the fragment. These can also be aliased in case of conflict.
 - Service / Ref define which Medusa UI app (service) and which page fragment (ref) get used.
+
+### Fragment render requests via channel
+
+The heartbeat channel causes a Flux Sink to be generated in local memory, which allows for communication from Hydra to connected services. 
+
+Medusa will again initiate the flow, when rendering a root page containing one or more fragments. It sends a List of FragmentRequests to Hydra across the heartbeat channel.
+
+Hydra will receive this and map these requests onto active Flux Sinks. Requests without such active Sinks result in null, which means the fallback will be triggered on Medusa side.
+
+If an active sink is available, it will be used to forward the relevant FragmentRequests to the relevant Medusa instances. Medusa receives these on its side of the heartbeat channel. 
+It passes the request on to the renderer, which will render it locally and update the Session accordingly. The render and Session then get returned to Hydra.
+
+Hydra combines the finished renders and updated Sessions, then sends a ResolvedFragments object back.
+
+Medusa can then use this object to complete its rendering.
