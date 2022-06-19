@@ -23,6 +23,9 @@ As the channel is active, the two-way connection can be used to pass along fragm
 
 ### Heartbeat channel
 
+![Sequence diagram of heartbeat channel](/img/heartbeat.svg)
+<img src="/img/heartbeat.svg">
+
 Hydra is not the initiator of registry. It simply listens for incoming requests.
 
 An app with Medusa will have a pointer to a Hydra instance. (TCP or WS?) It will initiate an RSocket channel with Hydra. It provides its application name, its available paths and its available resources.
