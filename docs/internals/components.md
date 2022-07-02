@@ -39,6 +39,8 @@ A session is stored in either local memory (when set up as a single instance) or
 Uses Thymeleaf to render the page with the provided Session's attributes.
 We use Thymeleaf for its rendering speed, and it's ability to be extended with new tags.
 
+While most Medusa functionality is handled through Thymeleaf tags, the processing of these is not Reactive; thus something like Fragments is something that is resolved before the HTML is sent to 
+
 After the render, websocket.js is injected and some JS variables are initialized.
 
 ### <a name="action-handler"></a> Action Handler

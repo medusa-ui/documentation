@@ -14,3 +14,4 @@ possible is not something that happens at runtime.
 It all starts with the RootDetector. This is the class that kicks off any initialization. That's all it does. 
 Effectively this kicks off before each bean is initialized.
 
+In addition to routes, all the HTML files are also scanned for Refs and Fragments, so it is known up-front which fragments are relevant, saving time during rendering.

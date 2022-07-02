@@ -25,19 +25,24 @@ As the channel is active, the two-way connection can be used to pass along fragm
 
 Hydra is not the initiator of registry. It simply listens for incoming requests.
 
-An app with Medusa will have a pointer to a Hydra instance. (TCP or WS?) It will initiate an RSocket channel with Hydra. It provides its application name, its available paths and its available resources.
+An app with Medusa will have a pointer to a Hydra instance. During startup initializations, once all routes are found, it shoots a post message to /h/discovery/{publicKey}/registration. 
+It provides its application name, its available paths and its available resources.
 
 Any Medusa app only connects to 1 Hydra instance. Hydra shares its information with other Hydra instances via Redis, or keeps it in-memory in case of a single instance. 
 Which Hydra instance it connects to should not matter, to allow for load balancing access.
 
-Hydra accepts the channel and uses this incoming information of Medusa's routes/resources. A few things happen:
+Hydra accepts the message and uses this incoming information of Medusa's routes/resources. A few things happen:
 - It stores the routes/resources in shared memory (thus sharing it with its cluster, if applicable) and changes its overallRouteHashKey in shared memory.
-- It creates a FluxSink and stores it in local memory, then returns this. It can use this FluxSink to send back responses to that specific Medusa instance on demand.
+- It returns an overview of the currently active services. This lets Medusa immediately boot up with Hydra capabilities such as dynamic menu items.
 
 Every second, Hydra checks this routeHashKey to see if it has changed. If it has, it will reload all routes/resources from memory and provision Spring Cloud Gateway routes to them. 
 Since this data is shared, any Hydra instance in the cluster will pick these up within 1 second, even if they have no direct channel connection.
 
-Upon connection termination, Hydra will remove its routes corresponding with the Medusa service and the local memory FluxSink. On the Medusa side, a connection termination will trigger an infinite connection retry every second.
+If this gets detected, it updates all its connected Medusa instances as well with this new overview.
+
+To stay active, the Medusa app sends an isAlive every 3 seconds. If no isAlive is received for more than 5 seconds, it is assumed the service is inactive.
+
+On the Medusa side, a connection termination will trigger an infinite connection retry every second.
 
 ## Fragments
 Fragments are the core of combined page micro-frontends. The idea is to have a system that can reliably combine parts of pages from different microservices (aka fragments) into a core page.
@@ -76,13 +81,13 @@ If such coordination is required, it should be explicitly pointed out.
 
 ### Fragment render requests via channel
 
-The heartbeat channel causes a Flux Sink to be generated in local memory, which allows for communication from Hydra to connected services. 
+Upon registration, Hydra knows how to reconnect with the Medusa instances, which allows for communication from Hydra to connected services. 
 
-Medusa will again initiate the flow, when rendering a root page containing one or more fragments. It sends a List of FragmentRequests to Hydra across the heartbeat channel.
+Medusa will again initiate the flow, when rendering a root page containing one or more fragments. It sends a List of Fragments to Hydra via /h/discovery/{publicKey}/requestFragment.
 
-Hydra will receive this and map these requests onto active Flux Sinks. Requests without such active Sinks result in null, which means the fallback will be triggered on Medusa side.
+Hydra will receive this and map these requests onto active services. Requests without such active services result in null, which means the fallback will be triggered on Medusa side.
 
-If an active sink is available, it will be used to forward the relevant FragmentRequests to the relevant Medusa instances. Medusa receives these on its side of the heartbeat channel. 
+If an active service is available, it will be used to forward the relevant Fragments to the relevant Medusa instances. Through the active instances, a POST call is forwarded to Medusa asking to render the Fragment.
 It passes the request on to the renderer, which will render it locally and update the Session accordingly. The render and Session then get returned to Hydra.
 
 Hydra combines the finished renders and updated Sessions, then sends a ResolvedFragments object back.
