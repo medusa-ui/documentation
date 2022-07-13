@@ -68,6 +68,11 @@ const config = {
             label: 'GitHub',
             position: 'right',
           },
+          {
+            href: 'https://medusa-showcase.herokuapp.com/',
+            label: 'UI examples showcase',
+            position: 'right',
+          },
         ],
       },
       footer: {
