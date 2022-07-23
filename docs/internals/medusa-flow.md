@@ -37,6 +37,9 @@ The SocketHandler works as a controller, connecting the flow of the action. Once
 
 The goal of the action handler is simply to execute the action. This set of Attributes can be merged with the last used attributes from the session, to then trigger a [re-render](/docs/internals/components.md#renderer) of the template.
 
+Not all attributes are used for rendering - some are pass-through. Those are attributes that do not get used for rendering purposes, but instead pass through all the way down to the JS, where they are interpreted. These should be rare; Currently there only exists the 'forwarding' attribute that acts like this.
+Those pass-through attributes get filtered out first and gets merged in later. This works the same way for the SocketHandler as it does for the ServerToClient setup.
+
 This results in a new HTML. 
 
 We then route this HTML though the [Diff Engine](/docs/internals/components.md#diff-engine), together with the last [rendered](/docs/internals/components.md#renderer) HTML from the [session](/docs/internals/components.md#session).

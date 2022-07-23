@@ -15,3 +15,6 @@ It all starts with the RootDetector. This is the class that kicks off any initia
 Effectively this kicks off before each bean is initialized.
 
 In addition to routes, all the HTML files are also scanned for Refs and Fragments, so it is known up-front which fragments are relevant, saving time during rendering.
+
+We also scan all methods in controller classes for a Session object. If a Session object is present, we remember if the object is at the start or end of the method, so we can autowire it in ourselves.
+
