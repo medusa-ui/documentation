@@ -58,9 +58,9 @@ const config = {
         items: [
           {
             type: 'doc',
-            docId: 'intro',
+            docId: 'category/internals',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Internals',
           },
           {
             href: 'https://github.com/medusa-ui',
@@ -68,7 +68,7 @@ const config = {
             position: 'right',
           },
           {
-            href: 'https://medusa-showcase.herokuapp.com/',
+            href: 'https://medusa-showcase.onrender.com/',
             label: 'UI examples showcase',
             position: 'right',
           },
