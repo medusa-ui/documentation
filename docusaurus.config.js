@@ -58,7 +58,7 @@ const config = {
         items: [
           {
             type: 'doc',
-            docId: 'category/internals',
+            docId: '/category/internals',
             position: 'left',
             label: 'Internals',
           },
